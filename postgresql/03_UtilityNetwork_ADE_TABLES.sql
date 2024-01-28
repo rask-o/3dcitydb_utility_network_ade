@@ -464,6 +464,20 @@ COMMENT ON COLUMN citydb.utn9_feature_graph.name_codespace  IS 'Name codespace';
 COMMENT ON COLUMN citydb.utn9_feature_graph.description     IS 'Description';
 
 ----------------------------------------------------------------
+-- Table NETWORK_GRAPH_TO_FEATURE_GRAPH
+----------------------------------------------------------------
+DROP TABLE IF EXISTS citydb.utn9_network_graph_to_feature_graph CASCADE;
+CREATE TABLE citydb.utn9_network_graph_to_feature_graph(
+	ntw_graph_id integer NOT NULL,
+	feat_graph_id integer NOT NULL,
+	CONSTRAINT utn9_network_graph_to_feature_graph_pk PRIMARY KEY (ntw_graph_id, feat_graph_id)
+);
+-- ALTER TABLE citydb.utn9_network_graph_to_feature_graph OWNER TO postgres;
+
+CREATE INDEX utn9_ntw_graph_to_feat_graph_ntw_graph_id_fkx ON citydb.utn9_network_graph_to_feature_graph USING btree (ntw_graph_id);
+CREATE INDEX utn9_ntw_graph_to_feat_graph_feat_graph_id_fkx ON citydb.utn9_network_graph_to_feature_graph USING btree (feat_graph_id);
+
+----------------------------------------------------------------
 -- Table NODE (FEATURE prototype)
 ----------------------------------------------------------------
 DROP TABLE IF EXISTS citydb.utn9_node CASCADE;
@@ -544,6 +558,20 @@ COMMENT ON COLUMN citydb.utn9_link.description            IS 'Description';
 COMMENT ON COLUMN citydb.utn9_link.direction              IS 'Link direction (+ or -)';
 COMMENT ON COLUMN citydb.utn9_link.link_control           IS 'Link control';
 COMMENT ON COLUMN citydb.utn9_link.type IS 'Interfeature link type';
+
+----------------------------------------------------------------
+-- Table NETWORK_GRAPH_TO_LINK
+----------------------------------------------------------------
+DROP TABLE IF EXISTS citydb.utn9_network_graph_to_link CASCADE;
+CREATE TABLE citydb.utn9_network_graph_to_link(
+	ntw_graph_id integer NOT NULL,
+	link_id integer NOT NULL,
+	CONSTRAINT utn9_network_graph_to_link_pk PRIMARY KEY (ntw_graph_id, link_id)
+);
+-- ALTER TABLE citydb.utn9_network_graph_to_link OWNER TO postgres;
+
+CREATE INDEX utn9_ntw_graph_to_link_ntw_graph_id_fkx ON citydb.utn9_network_graph_to_link USING btree (ntw_graph_id);
+CREATE INDEX utn9_ntw_graph_to_link_link_id_fkx ON citydb.utn9_network_graph_to_link USING btree (link_id);
 
 ----------------------------------------------------------------
 -- Table UTN_BUILDING (_CityObject)
@@ -986,6 +1014,10 @@ ALTER TABLE IF EXISTS citydb.utn9_feature_graph ADD CONSTRAINT utn9_feat_graph_o
 ALTER TABLE IF EXISTS citydb.utn9_feature_graph ADD CONSTRAINT utn9_feat_graph_utn_ntw_feat_fk FOREIGN KEY (ntw_feature_id) REFERENCES citydb.utn9_network_feature (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE IF EXISTS citydb.utn9_feature_graph ADD CONSTRAINT utn9_feat_graph_utn_ntw_graph_fk FOREIGN KEY (ntw_graph_id) REFERENCES citydb.utn9_network_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
 
+-- FOREIGN KEY constraint on Table NETWORK_GRAPH_TO_FEATURE_GRAPH
+ALTER TABLE IF EXISTS citydb.utn9_network_graph_to_feature_graph ADD CONSTRAINT utn9_ntw_graph_to_feat_graph_ntw_graph_fk FOREIGN KEY (ntw_graph_id) REFERENCES citydb.utn9_network_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE IF EXISTS citydb.utn9_network_graph_to_feature_graph ADD CONSTRAINT utn9_ntw_graph_to_feat_graph_feat_graph_fk FOREIGN KEY (feat_graph_id) REFERENCES citydb.utn9_feature_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+
 -- FOREIGN KEY constraint on Table NODE
 ALTER TABLE IF EXISTS citydb.utn9_node ADD CONSTRAINT utn9_node_objclass_fk FOREIGN KEY (objectclass_id) REFERENCES citydb.objectclass (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE IF EXISTS citydb.utn9_node ADD CONSTRAINT utn9_node_utn_feat_graph_fk FOREIGN KEY (feat_graph_id) REFERENCES citydb.utn9_feature_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
@@ -996,6 +1028,10 @@ ALTER TABLE IF EXISTS citydb.utn9_link ADD CONSTRAINT utn9_link_utn_node_fk1 FOR
 ALTER TABLE IF EXISTS citydb.utn9_link ADD CONSTRAINT utn9_link_utn_node_fk2 FOREIGN KEY (end_node_id) REFERENCES citydb.utn9_node (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE IF EXISTS citydb.utn9_link ADD CONSTRAINT utn9_link_utn_feat_graph_fk FOREIGN KEY (feat_graph_id) REFERENCES citydb.utn9_feature_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
 ALTER TABLE IF EXISTS citydb.utn9_link ADD CONSTRAINT utn9_link_utn_ntw_graph_fk FOREIGN KEY (ntw_graph_id) REFERENCES citydb.utn9_network_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE NO ACTION;
+
+-- FOREIGN KEY constraint on Table NETWORK_GRAPH_TO_LINK
+ALTER TABLE IF EXISTS citydb.utn9_network_graph_to_link ADD CONSTRAINT utn9_ntw_graph_to_link_ntw_graph_fk FOREIGN KEY (ntw_graph_id) REFERENCES citydb.utn9_network_graph (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE IF EXISTS citydb.utn9_network_graph_to_link ADD CONSTRAINT utn9_ntw_graph_to_link_link_fk FOREIGN KEY (link_id) REFERENCES citydb.utn9_link (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- FOREIGN KEY constraint on Table UTN9_BUILDING
 ALTER TABLE IF EXISTS citydb.utn9_building ADD CONSTRAINT utn9_bdg_bdg_fk FOREIGN KEY (id) REFERENCES citydb.building (id) MATCH FULL ON UPDATE CASCADE ON DELETE CASCADE;
