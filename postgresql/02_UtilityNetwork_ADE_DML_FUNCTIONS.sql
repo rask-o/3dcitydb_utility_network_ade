@@ -1371,7 +1371,7 @@ INSERT INTO %I.utn9_feature_graph (
  name,
  name_codespace,
  description,
- ntw_feature_id,
+ ntw_feature_id
 ) VALUES (
 %L, %L, %L, %L, %L, %L, %L, %L
 ) RETURNING id',
@@ -1393,6 +1393,7 @@ EXECUTE format('
   ) VALUES (
   %L, %L
   )',
+  p_schema_name,
   p_ntw_graph_id,
   inserted_id
 );
@@ -1753,16 +1754,19 @@ p_feat_graph_id,
 p_line_geom
 ) INTO inserted_id;
 
-EXECUTE format('
-INSERT INTO %I.utn9_network_graph_to_link (
-  ntw_graph_id,
-  link_id
-) VALUES (
-%L, %L
-)'
-p_ntw_graph_id,
-inserted_id
-);
+IF p_ntw_graph_id IS NOT NULL THEN
+  EXECUTE format('
+    INSERT INTO %I.utn9_network_graph_to_link (
+      ntw_graph_id,
+      link_id
+    ) VALUES (
+    %L, %L
+    )',
+    p_schema_name,
+    p_ntw_graph_id,
+    inserted_id
+  );
+END IF;
 
 RETURN inserted_id;
 EXCEPTION
