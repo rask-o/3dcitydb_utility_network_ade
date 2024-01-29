@@ -197,13 +197,13 @@ DECLARE
 	deleted_id integer;
 BEGIN
 -- Delete the depending InterFeatureLink(s)
-FOR l_id IN EXECUTE format('SELECT id FROM %I.utn9_link WHERE ntw_graph_id=%L', schema_name, o_id) LOOP
+FOR l_id IN EXECUTE format('SELECT id FROM %I.utn9_link l JOIN %I.utn9_network_graph_to_link gtl ON gtl.link_id = l.id WHERE gtl.ntw_graph_id=%L', schema_name, schema_name, o_id) LOOP
 	IF l_id IS NOT NULL THEN
 		EXECUTE 'SELECT citydb_pkg.utn9_delete_link($1, $2)' USING l_id, schema_name;
 	END IF;
 END LOOP;
 -- Delete the depending feature_graph(s)
-FOR fg_id IN EXECUTE format('SELECT id FROM %I.utn9_feature_graph WHERE ntw_graph_id=%L', schema_name, o_id) LOOP
+FOR fg_id IN EXECUTE format('SELECT id FROM %I.utn9_feature_graph fg JOIN %I.utn9_network_graph_to_feature_graph gtf ON gtf.feature_graph_id = fg.id  WHERE ntw_graph_id=%L', schema_name, o_id) LOOP
 	IF fg_id IS NOT NULL THEN
 		EXECUTE 'SELECT citydb_pkg.utn9_delete_feature_graph($1, $2)' USING fg_id, schema_name;
 	END IF;
@@ -1372,9 +1372,8 @@ INSERT INTO %I.utn9_feature_graph (
  name_codespace,
  description,
  ntw_feature_id,
- ntw_graph_id
 ) VALUES (
-%L, %L, %L, %L, %L, %L, %L, %L, %L
+%L, %L, %L, %L, %L, %L, %L, %L
 ) RETURNING id',
 p_schema_name,
 p_id, 
@@ -1384,9 +1383,20 @@ p_gmlid_codespace,
 p_name, 
 p_name_codespace, 
 p_description, 
-p_ntw_feature_id, 
-p_ntw_graph_id
+p_ntw_feature_id 
 ) INTO inserted_id;
+
+EXECUTE format('
+  INSERT INTO %I.utn9_network_graph_to_feature_graph (
+    ntw_graph_id,
+    feat_graph_id
+  ) VALUES (
+  %L, %L
+  )',
+  p_ntw_graph_id,
+  inserted_id
+);
+
 RETURN inserted_id;
 EXCEPTION
 	WHEN OTHERS THEN RAISE NOTICE 'citydb_pkg.utn9_insert_feature_graph (id: %): %', p_id, SQLERRM;
@@ -1722,10 +1732,9 @@ INSERT INTO %I.utn9_link (
  start_node_id,
  end_node_id,
  feat_graph_id,
- ntw_graph_id,
  line_geom
 ) VALUES (
-%L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L
+%L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L
 ) RETURNING id',
 p_schema_name,
 p_id, 
@@ -1741,9 +1750,20 @@ p_type,
 p_start_node_id, 
 p_end_node_id, 
 p_feat_graph_id, 
-p_ntw_graph_id, 
 p_line_geom
 ) INTO inserted_id;
+
+EXECUTE format('
+INSERT INTO %I.utn9_network_graph_to_link (
+  ntw_graph_id,
+  link_id
+) VALUES (
+%L, %L
+)'
+p_ntw_graph_id,
+inserted_id
+);
+
 RETURN inserted_id;
 EXCEPTION
 	WHEN OTHERS THEN RAISE NOTICE 'citydb_pkg.utn9_insert_link (id: %): %', p_id, SQLERRM;

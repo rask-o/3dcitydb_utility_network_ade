@@ -114,18 +114,17 @@ SELECT
   n1.type AS start_node_type,
   l.end_node_id,
   n2.type AS end_node_type,
-  l.ntw_graph_id,
+  gtl.ntw_graph_id,
   l.line_geom
 FROM
-  citydb.utn9_link l,
-  citydb.objectclass o,
-  citydb.utn9_node n1,
-  citydb.utn9_node n2
-WHERE
-  n1.id = l.start_node_id AND
-  n2.id = l.end_node_id AND
-  o.id = l.objectclass_id AND
-  o.classname='InterFeatureLink';
+  citydb.utn9_link l
+  JOIN citydb.objectclass o ON
+    o.id = l.objectclass_id
+    AND o.classname='InterFeatureLink'
+  JOIN citydb.utn9_node n1 ON n1.id = l.start_node_id
+  JOIN citydb.utn9_node n2 ON n2.id = l.end_node_id
+  JOIN citydb.utn9_network_graph_to_link gtl ON gtl.link_id = l.id
+;
 --ALTER VIEW citydb_view.utn9_link_interfeature OWNER TO postgres;
 
 ----------------------------------------------------------------
@@ -148,18 +147,17 @@ SELECT
   n1.type AS start_node_type,
   l.end_node_id,
   n2.type AS end_node_type,
-  l.ntw_graph_id,
+  gtl.ntw_graph_id,
   l.line_geom
 FROM
-  citydb.utn9_link l,
-  citydb.objectclass o,
-  citydb.utn9_node n1,
-  citydb.utn9_node n2
-WHERE
-  n1.id = l.start_node_id AND
-  n2.id = l.end_node_id AND
-  o.id = l.objectclass_id AND
-  o.classname='NetworkLink';
+  citydb.utn9_link l
+  JOIN citydb.objectclass o ON
+    o.id = l.objectclass_id
+    AND o.classname='NetworkLink'
+  JOIN citydb.utn9_node n1 ON n1.id = l.start_node_id
+  JOIN citydb.utn9_node n2 ON n2.id = l.end_node_id
+  JOIN citydb.utn9_network_graph_to_link gtl ON gtl.link_id = l.id
+;
 --ALTER VIEW citydb_view.utn9_link_network OWNER TO postgres;
 
 ----------------------------------------------------------------
@@ -199,12 +197,12 @@ SELECT
   fg.name_codespace,
   fg.description,
   fg.ntw_feature_id,
-  fg.ntw_graph_id
+  gtf.ntw_graph_id
 FROM
-  citydb.objectclass o,
   citydb.utn9_feature_graph fg
-WHERE
-  o.id = fg.objectclass_id;
+  JOIN citydb.objectclass o ON o.id = fg.objectclass_id
+  JOIN citydb.utn9_network_graph_to_feature_graph gtf ON gtf.feat_graph_id = fg.id
+;
 --ALTER VIEW citydb_view.utn9_feature_graph OWNER TO postgres;
 
 ----------------------------------------------------------------
