@@ -443,7 +443,7 @@ CREATE TABLE         citydb.utn9_feature_graph (
 	name            varchar,
 	name_codespace  varchar,
 	description     text,
-	ntw_feature_id  integer,
+	ntw_feature_id  integer
 );
 -- ALTER TABLE citydb.utn9_feature_graph OWNER TO postgres;
 
